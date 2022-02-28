@@ -2,12 +2,50 @@ var express = require('express');
 var path = require('path');
 var fs = require('fs');
 var bodyParser = require('body-parser');
+var mongoClient = require('mongodb').MongoClient;
+var url = 'mongodb://localhost:27017/test';
 var app = express();
+
 app.use(bodyParser.json());
 app.use(express.static('dist'));
 app.listen(8081, ()=>{
 	console.log('Back run  on 8081 port');
 });
+
+fs.writeFile('./logs/users/test.txt', 'PUSY', err => {
+    if (err) {
+      console.error(err)
+      return
+    }
+    console.log('Записал: PUSY'); //file written successfully
+    fs.readFile('./logs/users/test.txt', 'utf8', ( err, data) => {
+        if (err) throw err;
+        console.log('Прочитал:',data);
+       
+    })
+  });
+
+
+
+
+mongoClient.connect(url, function(err, dbs) {
+    if(err){
+        return console.log(err);
+    }
+    // взаимодействие с базой данных
+    console.log('Подключились к базе данных!');
+    var db = dbs.db('messeger');
+    var collection = db.collection("users");
+    collection.find().toArray((err, results)=>{
+        if(err){
+            return console.log('ERROR->', err);
+            }
+        console.log(results);
+         dbs.close();
+    });
+   
+});
+
 
 app.get('/users', function(reg, res, next){
     fs.readdir('./logs/users/', (err, files) => {
